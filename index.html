@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Junta de Freguesia de Cesar - Gestão 2026</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Fundo da página totalmente branco */
+        body {
+            background: #ffffff !important;
+            color: #2d3748 !important;
+        }
+        
+        /* O "quadrado" container com a cor escura e o aspeto original */
+        .container {
+            background: rgba(17, 24, 39, 0.85) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+        }
+
+        /* Todos os textos, títulos e labels dentro do quadrado brancos */
+        .container h1, .container h3, section p, label, .nav-tabs button {
+            color: #ffffff !important;
+        }
+        
+        .nav-tabs button.active {
+            color: #ffffff !important;
+            border-bottom: 2px solid #ffffff !important;
+        }
+
+        /* Inputs e tabelas adaptados para o fundo escuro */
+        input, select, textarea {
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: #a0aec0 !important;
+        }
+
+        /* Estilo para a zona dos filtros lado a lado */
+        .filtros-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .filtro-wrapper {
+            flex: 1;
+            text-align: left;
+        }
+
+        .filtro-wrapper select {
+            width: 100%;
+            margin-top: 5px;
+            padding: 8px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+        
+        .filtro-wrapper select option {
+            color: #2d3748;
+            background: #ffffff;
+        }
+
+        .grid-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .item-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ffffff !important;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .item-checkbox input {
+            cursor: pointer;
+            width: auto !important;
+            margin: 0 !important;
+        }
+
+        .lista-dias {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .linha-dia-btn {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .linha-dia-btn button {
+            background: #e53e3e !important;
+        }
+
+        th {
+            color: #ffffff !important;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        td {
+            color: #e2e8f0 !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .status-box {
+            color: #ffffff !important;
+        }
+
+        .status-box.disponivel {
+            background: rgba(72, 187, 120, 0.25) !important;
+            border: 1px solid #48bb78 !important;
+        }
+
+        .status-box.ocupado {
+            background: rgba(245, 101, 101, 0.25) !important;
+            border: 1px solid #f56565 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="mainContainer">
+        
+        <!-- SECÇÃO DE LOGIN -->
+        <section id="loginSection">
+            <header>
+                <div class="logo-wrapper">
+                    <img src="imagens/cesarsempre2.png" alt="Cesar Sempre" class="logo-junta">
+                </div>
+                <p>Acesso Restrito - Gestão de Equipamentos</p>
+            </header>
+            <form id="loginForm">
+                <input type="email" id="loginEmail" placeholder="" required>
+                <input type="password" id="loginPass" placeholder="" required>
+                <button type="submit" id="btnLoginOriginal">Entrar no Sistema</button>
+            </form>
+            <p id="loginErro" class="erro-msg" style="display: none;">Credenciais incorretas!</p>
+        </section>
+
+        <!-- SECÇÃO PRINCIPAL -->
+        <section id="reservaSection" style="display: none;">
+            <header>
+                <div class="logo-wrapper">
+                    <img src="imagens/cesarsempre2.png" alt="Cesar Sempre" class="logo-junta-mini">
+                </div>
+                <h1>Painel de Controlo</h1>
+                <div class="nav-tabs">
+                    <button onclick="alternarVista('agenda')" id="btnAgenda" class="active">Agenda</button>
+                    <button onclick="alternarVista('historico')" id="btnHistorico">Gerir Histórico</button>
+                </div>
+            </header>
+
+            <!-- VISTA: AGENDA (MARCAÇÕES) -->
+            <div id="vistaAgenda">
+                <div class="agenda-checker">
+                    <label>Equipamento/Espaço:</label>
+                    <select id="checkEquipamento" onchange="verificarDisponibilidade()">
+                        <option value="Carrinha da Junta">Carrinha da Junta</option>
+                        <option value="Projetor">Projetor</option>
+                        <option value="Tela">Tela</option>
+                        <option value="Bandeira/Estandarte">Bandeira/Estandarte</option>
+                        <option value="Painel Publicitário">Painel Publicitário</option>
+                        <option value="Tenda Madeira 1">Tenda Madeira 1</option>
+                        <option value="Tenda Madeira 2">Tenda Madeira 2</option> 
+                        <option value="Tenda Madeira 3">Tenda Madeira 3</option>
+                        <option value="Tenda Madeira 4">Tenda Madeira 4</option>
+                        <option value="Centro Civico">Centro Civico</option>
+                        <option value="Salão Nobre">Salão Nobre</option>
+                        <option value="Sala R/C">Sala R/C</option>
+                        <option value="Sala Leitura">Sala Leitura</option>
+                        <option value="Sala GC 1º Andar ">Sala GC 1º Andar</option>
+                        <option value="Casa Gastronomia">Casa Gastronomia</option>
+                        <option value="Bar/WC/Parque/ Merendas">Bar/WC/Parque/ Merendas</option>
+                        <option value="Nucleo Ruralidade ">Nucleo Ruralidade</option>
+                    </select>
+
+                    <label>Data:</label>
+                    <input type="date" id="checkData" onchange="verificarDisponibilidade()">
+
+                    <div id="statusPainel" class="status-box">
+                        Selecione uma data para verificar...
+                    </div>
+                </div>
+
+                <!-- FORMULÁRIO DE RESERVA -->
+                <div id="formularioReserva" class="form-container" style="display: none;">
+                    <h3 id="tituloForm">Nova Reserva</h3>
+                    <form id="reservaForm">
+                        <input type="hidden" id="editIndex" value="-1">
+                        
+                        <div id="containerMultiplosCampos">
+                            <label>Selecione os Locais/Equipamentos pretendidos:</label>
+                            <div class="grid-checkboxes" id="listaCheckboxesEquipamentos">
+                                <label class="item-checkbox"><input type="checkbox" value="Carrinha da Junta"> Carrinha da Junta</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Projetor"> Projetor</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Tela"> Tela</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Bandeira/Estandarte"> Bandeira/Estandarte</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Painel Publicitário"> Painel Publicitário</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Tenda Madeira 1"> Tenda Madeira 1</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Tenda Madeira 2"> Tenda Madeira 2</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Tenda Madeira 3"> Tenda Madeira 3</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Tenda Madeira 4"> Tenda Madeira 4</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Centro Civico"> Centro Civico</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Salão Nobre"> Salão Nobre</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Sala R/C"> Sala R/C</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Sala Leitura"> Sala Leitura</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Sala GC 1º Andar "> Sala GC 1º Andar</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Casa Gastronomia"> Casa Gastronomia</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Bar/WC/Parque/ Merendas"> Bar/WC/Parque/ Merendas</label>
+                                <label class="item-checkbox"><input type="checkbox" value="Nucleo Ruralidade "> Nucleo Ruralidade</label>
+                            </div>
+
+                            <label>Datas Escolhidas:</label>
+                            <div class="lista-dias" id="containerListaDias"></div>
+                            <button type="button" onclick="adicionarNovaLinhaData()" style="background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid rgba(255,255,255,0.2); padding: 10px 15px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; font-size: 13px; display: block; width: 100%;">+ Adicionar Outro Dia</button>
+                        </div>
+                        
+                        <label>Nome do Evento:</label>
+                        <input type="text" id="evento" placeholder="Ex: Assembleia de Freguesia, Festa Anual, etc." required>
+
+                        <label>Entidade Requerente:</label>
+                        <input type="text" id="nome" placeholder="Associação / Pessoa" required>
+
+                        <label>Contacto Telefónico:</label>
+                        <input type="tel" id="contacto" placeholder="9xx xxx xxx" required>
+
+                        <div style="display: flex; gap: 15px;">
+                            <div style="flex: 1;">
+                                <label>Hora de Início:</label>
+                                <input type="time" id="hora" required>
+                            </div>
+                            <div style="flex: 1;">
+                                <label>Hora de Fim:</label>
+                                <input type="time" id="horaFim" required>
+                            </div>
+                        </div>
+
+                        <label>Observações (Opcional):</label>
+                        <textarea id="obs" placeholder="Notas adicionais..." rows="3"></textarea>
+                        
+                        <button type="submit" class="btn-reserva" id="btnConfirmarForm">Confirmar e Gravar Tudo</button>
+                        <button type="button" onclick="cancelarMarcacao()" class="btn-cancel">Cancelar</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- VISTA: HISTÓRICO -->
+            <div id="vistaHistorico" style="display: none;">
+                <h3>Lista de Reservas 2026</h3>
+                
+                <!-- ZONA DOS FILTROS (LADO A LADO) -->
+                <div class="filtros-container">
+                    <!-- Filtro por Equipamento -->
+                    <div class="filtro-wrapper">
+                        <label style="font-size: 14px;">Filtrar por Equipamento:</label>
+                        <select id="filtroEquipamento" onchange="renderizarHistorico()">
+                            <option value="Todos">Mostrar Todos</option>
+                            <option value="Carrinha da Junta">Carrinha da Junta</option>
+                            <option value="Projetor">Projetor</option>
+                            <option value="Tela">Tela</option>
+                            <option value="Bandeira/Estandarte">Bandeira/Estandarte</option>
+                            <option value="Painel Publicitário">Painel Publicitário</option>
+                            <option value="Tenda Madeira 1">Tenda Madeira 1</option>
+                            <option value="Tenda Madeira 2">Tenda Madeira 2</option> 
+                            <option value="Tenda Madeira 3">Tenda Madeira 3</option>
+                            <option value="Tenda Madeira 4">Tenda Madeira 4</option>
+                            <option value="Centro Civico">Centro Civico</option>
+                            <option value="Salão Nobre">Salão Nobre</option>
+                            <option value="Sala R/C">Sala R/C</option>
+                            <option value="Sala Leitura">Sala Leitura</option>
+                            <option value="Sala GC 1º Andar ">Sala GC 1º Andar</option>
+                            <option value="Casa Gastronomia">Casa Gastronomia</option>
+                            <option value="Bar/WC/Parque/ Merendas">Bar/WC/Parque/ Merendas</option>
+                            <option value="Nucleo Ruralidade ">Nucleo Ruralidade</option>
+                        </select>
+                    </div>
+
+                    <!-- Novo Filtro por Estado das Datas -->
+                    <div class="filtro-wrapper">
+                        <label style="font-size: 14px;">Filtrar por Datas:</label>
+                        <select id="filtroDataEstado" onchange="renderizarHistorico()">
+                            <option value="Todos">Mostrar Todos</option>
+                            <option value="Realizados">Eventos Realizados</option>
+                            <option value="NaoRealizados">Eventos Não Realizados</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data / Horas</th>
+                                <th>Local/Espaço</th>
+                                <th>Nome do Evento</th>
+                                <th>Requerente</th>
+                                <th>Observações</th>
+                                <th style="text-align:center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpoTabela"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <button type="button" onclick="logout()" class="btn-logout">Sair do Sistema</button>
+        </section>
+    </div>
+
+    <!-- FIREBASE SCRIPTS -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
